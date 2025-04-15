@@ -22,7 +22,7 @@ const PrintingScreen = () => {
         }}
       >
         <img
-          src="/festival_logo.png"
+          src="./festival_logo.png"
           alt="Festival Logo"
           className="mt-10 w-2/3 max-w-[600px]"
         />
@@ -32,7 +32,7 @@ const PrintingScreen = () => {
         </div>
 
         <img
-          src="/logo.png"
+          src="./logo.png"
           alt="Bottom Logo"
           className="mb-10 w-1/3 max-w-[300px]"
         />

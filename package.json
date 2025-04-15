@@ -7,7 +7,9 @@
   "build": {
     "files": [
       "dist/**", 
-      "electron/main.js"
+      "electron/main.js",
+      "public/**/*"
+
     ]
   },
   "author": "hana platform",
