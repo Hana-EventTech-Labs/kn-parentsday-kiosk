@@ -22,12 +22,32 @@ a:hover {
   color: #535bf2;
 }
 
+/* index.css에 다음 내용을 추가하거나 수정 */
 body {
   margin: 0;
+  padding: 0;
+  overflow: hidden; /* 스크롤 방지 */
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+
+#root {
+  width: 1080px;
+  height: 1920px;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden; /* 내부 컨텐츠가 넘치지 않도록 */
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain; /* 이미지 비율 유지하면서 컨테이너에 맞춤 */
 }
 
 h1 {

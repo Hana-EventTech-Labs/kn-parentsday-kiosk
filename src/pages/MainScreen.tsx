@@ -22,8 +22,8 @@ const MainScreen = () => {
     <div
       className="flex items-center justify-center overflow-hidden bg-black"
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        height: '100%',
       }}
     >
       <div
@@ -31,12 +31,18 @@ const MainScreen = () => {
         style={{
           width: '1080px',
           height: '1920px',
+          maxWidth: '100%',
+          maxHeight: '100%',
         }}
       >
         <img
           src="./main_bg.png"
           alt="이벤트 배경"
           className="w-full h-full object-cover"
+          style={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+          }}
         />
       </div>
     </div>

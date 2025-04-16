@@ -7,13 +7,21 @@ import CompleteScreen from './pages/CompleteScreen'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<MainScreen />} />
-      <Route path="/keyboard" element={<KeyboardScreen />} />
-      <Route path="/upload" element={<QRCodeScreen />} />
-      <Route path="/printing" element={<PrintingScreen />} />
-      <Route path="/complete" element={<CompleteScreen />} />
-    </Routes>
+    <div className="app-container" style={{ 
+      overflow: 'hidden',
+      width: '1080px', 
+      height: '1920px',
+      maxWidth: '100%',
+      maxHeight: '100%',
+    }}>
+      <Routes>
+        <Route path="/" element={<MainScreen />} />
+        <Route path="/keyboard" element={<KeyboardScreen />} />
+        <Route path="/upload" element={<QRCodeScreen />} />
+        <Route path="/printing" element={<PrintingScreen />} />
+        <Route path="/complete" element={<CompleteScreen />} />
+      </Routes>
+    </div>
   )
 }
 
