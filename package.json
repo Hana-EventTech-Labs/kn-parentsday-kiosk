@@ -7,9 +7,13 @@
   "build": {
     "files": [
       "dist/**", 
-      "electron/main.js",
-      "public/**/*"
-
+      "electron/main.js"
+    ],
+    "extraResources": [
+      {
+        "from": "public",
+        "to": "public"
+      }
     ]
   },
   "author": "hana platform",
@@ -17,7 +21,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
     "qrcode.react": "^4.2.0",

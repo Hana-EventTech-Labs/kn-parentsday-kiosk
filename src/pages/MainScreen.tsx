@@ -19,7 +19,13 @@ const MainScreen = () => {
   }, [navigate])
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-black">
+    <div
+      className="flex items-center justify-center overflow-hidden bg-black"
+      style={{
+        width: '100vw',
+        height: '100vh',
+      }}
+    >
       <div
         className="relative overflow-hidden"
         style={{
@@ -28,9 +34,9 @@ const MainScreen = () => {
         }}
       >
         <img
-          src="/main_bg.png"
+          src="./main_bg.png"
           alt="이벤트 배경"
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          className="w-full h-full object-cover"
         />
       </div>
     </div>
