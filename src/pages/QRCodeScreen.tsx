@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 
@@ -82,8 +82,6 @@ const QRCodeScreen = () => {
     navigate('/keyboard')
   }
 
-  
-
   const handleReset = async () => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.close()
@@ -122,11 +120,54 @@ const QRCodeScreen = () => {
     }
   }
 
+  // 컨테이너 스타일 추가
+  const containerStyle: CSSProperties = {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    position: 'relative', // 절대 위치 지정을 위한 상대 위치 설정
+    backgroundColor: '#ffffff',
+  };
+
+  // 상단 로고 스타일
+  const topLogoContainerStyle: CSSProperties = {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: '48px',
+    paddingBottom: '24px',
+  };
+
+  // 중앙 컨텐츠 스타일
+  const contentContainerStyle: CSSProperties = {
+    flex: '1',
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: '150px', // 하단 로고를 위한 공간 확보
+  };
+
+  // 하단 로고 스타일 - 절대 위치로 고정
+  const bottomLogoContainerStyle: CSSProperties = {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: '30px', // 화면 하단에서 30px 위에 배치
+    left: 0,
+    paddingBottom: '20px',
+  };
   
   return (
-    <div className="w-full h-full flex flex-col items-center justify-between">
+    <div style={containerStyle}>
       {/* 상단 로고 */}
-      <div className="w-full flex justify-center items-center pt-12 pb-6">
+      <div style={topLogoContainerStyle}>
         <img
           src="./festival_logo.png"
           alt="Festival Logo"
@@ -140,7 +181,7 @@ const QRCodeScreen = () => {
       </div>
 
       {/* 중앙 QR 코드 + 버튼 */}
-      <div className="flex-1 w-full flex justify-center items-center">
+      <div style={contentContainerStyle}>
         <div className="w-full max-w-[600px] flex flex-col items-center gap-12">
           {/* QR 코드 or 이미지 */}
           <div className="flex justify-center items-center w-full">
@@ -182,8 +223,8 @@ const QRCodeScreen = () => {
               display: 'flex',
               justifyContent: 'center',
               gap: '40px',
-              marginTop: '48px',
-              marginBottom: '48px',
+              marginTop: '68px',
+              marginBottom: '800px',
             }}
           >
             <button
@@ -222,8 +263,8 @@ const QRCodeScreen = () => {
         </div>
       </div>
 
-      {/* 하단 로고 */}
-      <div className="w-full flex justify-center items-center pt-6 pb-12">
+      {/* 하단 로고 - 절대 위치로 고정 */}
+      <div style={bottomLogoContainerStyle}>
         <img
           src="./logo.png"
           alt="Bottom Logo"
