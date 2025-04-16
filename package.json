@@ -1,30 +1,38 @@
 {
-  "name": "kn-photo-kiosk",
+  "name": "printer-sdk-electron",
   "private": true,
   "version": "1.0.0",
   "type": "commonjs",
   "main": "electron/main.js",
   "build": {
     "files": [
-      "dist/**", 
-      "electron/main.js"
+      "dist/**",
+      "electron/**"
     ],
     "extraResources": [
       {
-        "from": "public",
-        "to": "public"
+        "from": "public/resources",
+        "to": "resources"
       }
-    ]
+    ],
+    "win": {
+      "target": "portable"
+    }
   },
   "author": "hana platform",
   "scripts": {
     "dev": "vite",
+    "start": "electron-forge start",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
+    "electron": "^35.1.5",
+    "electron-is-dev": "^2.0.0",
+    "koffi": "^2.11.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -35,13 +43,16 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^35.1.5",
+    "concurrently": "^8.2.2",
+    "electron-builder": "^24.9.1",
+    "electron-rebuild": "^3.2.9",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "wait-on": "^8.0.3"
   }
 }
