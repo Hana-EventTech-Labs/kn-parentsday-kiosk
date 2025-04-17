@@ -2,11 +2,12 @@ const { contextBridge } = require('electron');
 const path = require('path');
 const koffi = require('koffi');
 const fs = require('fs');
+const isDev = process.argv.includes('--dev'); // ✅ 직접 플래그 확인
 
 // DLL 경로 설정
-const dllPath = process.env.NODE_ENV === 'development' 
-  ? path.join(__dirname, 'resources', 'SmartComm2.dll')
-  : path.join(process.resourcesPath, 'resources', 'SmartComm2.dll');
+const dllPath = isDev
+  ? path.join(__dirname, 'resources', 'SmartComm2.dll') // dev에서는 여기
+  : path.join(process.resourcesPath, 'resources', 'SmartComm2.dll'); // prod에서는 여기
 console.log('📂 DLL 경로:', dllPath);
 console.log('📦 Koffi 버전:', koffi.version);
 console.log('🧠 Electron arch:', process.arch);
@@ -265,4 +266,36 @@ const os = require('os');
 contextBridge.exposeInMainWorld('env', {
   cwd: () => process.cwd(),
   downloadPath: () => path.join(os.homedir(), 'Downloads')
+});
+
+// 파일 저장 API 추가
+contextBridge.exposeInMainWorld('fileApi', {
+  // 이미지 URL을 다운로드 폴더에 저장하는 함수
+  saveImageFromUrl: async (url, filename = 'photo.png') => {
+    try {
+      console.log('🔽 이미지 저장 시작:', url, '→', filename);
+      
+      // 이미지 가져오기
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`이미지 다운로드 실패: ${response.status}`);
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // 다운로드 폴더 경로
+      const downloadPath = path.join(os.homedir(), 'Downloads');
+      const filePath = path.join(downloadPath, filename);
+      
+      // 파일 쓰기
+      fs.writeFileSync(filePath, buffer);
+      console.log('✅ 이미지 저장 완료:', filePath);
+      
+      return { success: true, filePath };
+    } catch (error) {
+      console.error('❌ 이미지 저장 오류:', error);
+      return { success: false, error: error.message };
+    }
+  }
 });

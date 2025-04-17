@@ -114,9 +114,9 @@ const PrintingScreen = () => {
           page: 0,
           panel: 1,
           x: 150,
-          y: 100,
-          width: 150,
-          height: 200,
+          y: 150,
+          width: 350,
+          height: 300,
           imagePath: photoPath
         });
           
