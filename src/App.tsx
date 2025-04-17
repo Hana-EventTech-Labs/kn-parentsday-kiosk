@@ -7,9 +7,10 @@ import CompleteScreen from './pages/CompleteScreen'
 
 function App() {
   return (
-    <div className="app-container" style={{ 
-      overflow: 'hidden',
-      width: '1080px', 
+    <div className="app-container" style={{
+      position: 'relative',   // ✅ 필요
+      overflow: 'auto',       // ✅ 스크롤이든 화면 넘김이든 허용
+      width: '1080px',
       height: '1920px',
       maxWidth: '100%',
       maxHeight: '100%',

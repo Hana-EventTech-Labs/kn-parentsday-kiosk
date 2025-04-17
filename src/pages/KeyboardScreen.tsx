@@ -4,10 +4,18 @@ import VirtualKeyboard from '../components/VirtualKeyboard';
 
 const KeyboardScreen = () => {
   const [, setInput] = useState('')
+  const [isNavigating, setIsNavigating] = useState(false); // ⬅️ 추가
+
   const navigate = useNavigate(); // 👈 추가
 
-  const handlePrint = () => { // 👈 추가
-    navigate('/printing');
+  const handlePrint = () => {
+    if (isNavigating) return; // 중복 방지
+    setIsNavigating(true);
+  
+    // DOM 업데이트 시간을 조금 주고 navigate
+    setTimeout(() => {
+      navigate('/printing');
+    }, 100); // 100ms 정도 주면 충분
   };
 
 
