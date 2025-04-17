@@ -134,7 +134,17 @@ const PrintingScreen = () => {
         setStatus('텍스트 출력 중...');
 
         const text = "부모님 감사합니다";
-        console.log('📝 텍스트 그리기 시도:', text);
+        const textResult = await printerApi.drawText({
+          page: 0,
+          panel: 1,
+          text: text,
+          x: 100,
+          y: 500,
+          fontName: "KCC-은영체",
+          fontSize: 15,
+          fontStyle: 0x00
+        });
+        console.log('📝 텍스트 그리기 시도:', textResult);
 
         setProgress(80);
         setStatus('인쇄 중...');
