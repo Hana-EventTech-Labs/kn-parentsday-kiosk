@@ -49,61 +49,78 @@ const DRAWTEXT2INFO = koffi.struct('DRAWTEXT2INFO', {
   szFaceName: 'uint16[32]'
 });
 
-// 함수 정의
+// DLL 함수 정의
 const SmartComm_GetDeviceList2 = smart.stdcall('SmartComm_GetDeviceList2', 'int', ['void *']);
 const SmartComm_OpenDevice2 = smart.stdcall('SmartComm_OpenDevice2', 'int', ['void **', 'void *', 'int']);
 const SmartComm_DrawImage = smart.stdcall('SmartComm_DrawImage', 'int', ['void *', 'uint8', 'uint8', 'int', 'int', 'int', 'int', 'void *', 'void *']);
 const SmartComm_DrawText2 = smart.stdcall('SmartComm_DrawText2', 'int', ['void *', 'uint8', 'uint8', 'void *', 'void *']);
 const SmartComm_Print = smart.stdcall('SmartComm_Print', 'int', ['void *']);
 const SmartComm_CloseDevice = smart.stdcall('SmartComm_CloseDevice', 'int', ['void *']);
+const rectPtr = koffi.pointer('RECT', koffi.opaque()); // 반환값 무시할 거면 null 가능
 
 let currentHandle = null;
 
-// UTF-16LE 문자열 디코딩
+// UTF-16LE 문자열 디코딩 함수
 const decodeWString = (uint16Array) => {
   return Buffer.from(uint16Array.buffer).toString('utf16le').replace(/\0/g, '');
 };
 
+// Electron 프린터 API 노출
 contextBridge.exposeInMainWorld('printerApi', {
   getDeviceList: async () => {
     try {
       console.log('🔄 프린터 목록 조회 시작');
-      
-      const printerListSize = koffi.sizeof(SMART_PRINTER_LIST); // 👈 수정
-      const printerListBuffer = Buffer.alloc(printerListSize);   // 👈 수정
-  
+
+      const printerListSize = koffi.sizeof(SMART_PRINTER_LIST);
+      const printerListBuffer = Buffer.alloc(printerListSize);
+
       const result = SmartComm_GetDeviceList2(printerListBuffer);
       console.log('📊 SmartComm_GetDeviceList2 결과:', result);
-  
+
       if (result !== 0) {
         return { success: false, error: `프린터 목록 조회 실패 (코드 ${result})` };
       }
-  
+
       const parsed = koffi.decode(printerListBuffer, SMART_PRINTER_LIST);
-      const devices = parsed.item.slice(0, parsed.n).map(device => ({
-        name: decodeWString(device.name),
-        id: decodeWString(device.id),
-        dev: decodeWString(device.dev),
-        desc: decodeWString(device.desc),
-        pid: device.pid
-      }));
-  
+      const devices = parsed.item.slice(0, parsed.n).map((device, idx) => {
+        const name = decodeWString(device.name);
+        const id = decodeWString(device.id);
+        const dev = decodeWString(device.dev);
+        const desc = decodeWString(device.desc);
+
+        // ✅ 프린터 리스트 출력 (디버그용)
+        console.log(`📋 프린터[${idx}]`);
+        console.log(`   name: ${JSON.stringify(name)}`);
+        console.log(`   id  : ${JSON.stringify(id)}`);
+        console.log(`   dev : ${JSON.stringify(dev)}`);
+        console.log(`   desc: ${JSON.stringify(desc)} (길이: ${desc.length})`);
+
+        return {
+          name,
+          id,
+          dev,
+          description: desc,
+          pid: device.pid
+        };
+      });
+
       return { success: true, devices };
     } catch (err) {
       console.error('❌ 장치 목록 예외 발생:', err);
       return { success: false, error: err.message };
     }
   },
-  
 
-  openDevice: async (desc) => {
+  openDevice: async (id) => {
     try {
-      console.log('🔌 장치 열기:', desc);
-      const handlePtr = Buffer.alloc(koffi.sizeof('void *'));
-      const descBuf = Buffer.alloc(512);
-      descBuf.write(desc, 'utf16le');
+      console.log('🔌 장치 열기 시도:', id);
+      console.log('🔤 넘긴 id 내용:', JSON.stringify(id));
+      console.log('🔤 길이:', id.length);
 
-      const result = SmartComm_OpenDevice2(handlePtr, descBuf, 2); // 2 = SMART_OPENDEVICE_BYDESC
+      const handlePtr = Buffer.alloc(koffi.sizeof('void *'));
+      const idBuf = Buffer.from(id + '\0', 'utf16le'); // ✅ null-terminated UTF-16LE
+
+      const result = SmartComm_OpenDevice2(handlePtr, idBuf, 0); // 1 = ID 기준으로 열기
       console.log('📟 openDevice2 결과:', result);
 
       if (result !== 0) {
@@ -115,28 +132,90 @@ contextBridge.exposeInMainWorld('printerApi', {
     } catch (err) {
       return { success: false, error: err.message };
     }
-  },
+  }
+  ,
 
-  drawImage: async ({ page = 0, panel = 1, x = 0, y = 0, width = 0, height = 0, imagePath }) => {
+  drawImage: async ({ page, panel, x, y, width, height, imagePath }) => {
     try {
-      console.log('🖼 이미지 경로:', imagePath);
-      if (!fs.existsSync(imagePath)) {
-        return { success: false, error: '이미지 파일 없음' };
+      if (!currentHandle) return { success: false, error: '프린터가 연결되지 않았습니다.' };
+
+      const imgPathBuf = Buffer.from(imagePath + '\0', 'utf16le');
+
+      const result = SmartComm_DrawImage(
+        currentHandle,
+        page,
+        panel,
+        x,
+        y,
+        width,
+        height,
+        imgPathBuf,
+        null // prcArea 안 쓸 거면 null
+      );
+
+      if (result !== 0) {
+        return { success: false, error: `DrawImage 실패 (코드 ${result})` };
       }
 
-      // 구현 필요
-      return { success: false, error: '미구현: 이미지 전송' };
+      return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
     }
   },
 
-  drawText: async (params) => {
+  drawText: async ({ page, panel, x, y, width, height, fontName, fontSize, fontStyle, color, text }) => {
     try {
-      console.log('📝 drawText 호출:', params);
-      // 구현 필요
-      return { success: false, error: '미구현: 텍스트 전송' };
+      if (!currentHandle) return { success: false, error: '프린터가 연결되지 않았습니다.' };
+  
+      console.log('📝 텍스트 그리기 시작:', text);
+      
+      // 기존 정의된 DRAWTEXT2INFO 구조체 사용
+      const info = {
+        x: x,
+        y: y,
+        cx: width,
+        cy: height,
+        rotate: 0,
+        align: 0,
+        fontHeight: fontSize,
+        fontWidth: 0,
+        style: fontStyle,
+        color: color,
+        option: 0,
+        szFaceName: new Uint16Array(32)  // 원래 정의된 대로 Uint16Array 사용
+      };
+      
+      // 폰트 이름 복사 - Arial 사용 (단순화)
+      const fontBuf = Buffer.from("Arial\0", 'utf16le');
+      // Uint16Array에 폰트 이름 복사
+      fontBuf.copy(new Uint8Array(info.szFaceName.buffer));
+      
+      // 구조체 생성 (이미 정의된 DRAWTEXT2INFO 사용)
+      const dtInfo = koffi.alloc(DRAWTEXT2INFO, info);
+      
+      // 텍스트 버퍼 생성
+      const textBuf = Buffer.from(text + '\0', 'utf16le');
+      
+      console.log('📝 텍스트 출력 시도:', text);
+      
+      // 이미 정의된 SmartComm_DrawText2 함수 사용
+      const result = SmartComm_DrawText2(
+        currentHandle,
+        page,
+        panel,
+        dtInfo,
+        textBuf
+      );
+      
+      console.log('📝 텍스트 결과:', result);
+      
+      if (result !== 0) {
+        return { success: false, error: `DrawText 실패 (코드 ${result})` };
+      }
+      
+      return { success: true };
     } catch (err) {
+      console.error('🔴 drawText 예외:', err);
       return { success: false, error: err.message };
     }
   },
@@ -173,4 +252,15 @@ contextBridge.exposeInMainWorld('printerApi', {
   getPreviewImage: async () => {
     return { success: false, error: '미구현' };
   }
+});
+
+contextBridge.exposeInMainWorld('envApi', {
+  cwd: () => process.cwd()
+});
+
+const os = require('os');
+
+contextBridge.exposeInMainWorld('env', {
+  cwd: () => process.cwd(),
+  downloadPath: () => path.join(os.homedir(), 'Downloads')
 });
