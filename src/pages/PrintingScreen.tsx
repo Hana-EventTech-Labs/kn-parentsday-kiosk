@@ -1,6 +1,7 @@
-import { useEffect, useState, CSSProperties } from 'react';
+import { useEffect, useState, CSSProperties, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { printerApi } from '../services/printerApi';
+
 declare global {
   interface Window {
     envApi: {
@@ -18,17 +19,24 @@ declare global {
   }
 }
 
-
 const PrintingScreen = () => {
   const navigate = useNavigate();
   const [dots, setDots] = useState('...');
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<string>('준비 중...');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
-
   
+  // 인쇄 진행 중 여부를 체크하는 ref 추가
+  const printingInProgress = useRef(false);
+
   useEffect(() => {
     console.log('🖨️ PrintingScreen 컴포넌트 마운트');
+
+    // 이미 인쇄 진행 중이면 중복 실행 방지
+    if (printingInProgress.current) {
+      console.log('🖨️ 인쇄가 이미 진행 중입니다. 중복 실행 방지');
+      return;
+    }
 
     if (!window.printerApi) {
       console.error('❌ printerApi가 정의되지 않았습니다!');
@@ -40,6 +48,9 @@ const PrintingScreen = () => {
     console.log('🖨️ printerApi 사용 가능:', window.printerApi);
 
     const printProcess = async () => {
+      // 인쇄 시작 플래그 설정
+      printingInProgress.current = true;
+      
       try {
         setStatus('프린터 연결 중...');
         setProgress(10);
@@ -85,42 +96,6 @@ const PrintingScreen = () => {
         console.log('🖼️ 템플릿 이미지 경로 시도 1:', basePath);
 
         const fs = window.require ? window.require('fs') : null;
-        const path = window.require ? window.require('path') : null;
-
-        let useTemplate = false;
-
-        if (fs && !fs.existsSync(basePath) && path) {
-          basePath = path.join(__dirname, 'resources', 'default_base.jpg');
-          console.log('🖼️ 템플릿 이미지 경로 시도 2 (default):', basePath);
-
-          if (!fs.existsSync(basePath)) {
-            console.warn('⚠️ 템플릿 이미지 없음. 기본 템플릿도 없음. 생략합니다.');
-            useTemplate = false;
-          }
-        }
-
-        // if (useTemplate) {
-        //   console.log('🖼️ 최종 선택된 템플릿 이미지 경로:', basePath);
-
-        //   const baseImgResult = await printerApi.drawImage({
-        //     page: 0,
-        //     panel: 1,
-        //     x: 513,
-        //     y: 317,
-        //     width: 638,
-        //     height: 1011,
-        //     imagePath: basePath
-        //   });
-
-        //   console.log('🖼️ 템플릿 이미지 그리기 결과:', baseImgResult);
-
-        //   if (!baseImgResult.success) {
-        //     console.warn('⚠️ 템플릿 이미지 그리기 실패:', baseImgResult.error);
-        //     // 실패해도 계속 진행
-        //   }
-        // } else {
-        //   console.log('🧾 템플릿 이미지 생략하고 다음 단계 진행');
-        // }
 
         setProgress(50);
         setStatus('사진 불러오는 중...');
@@ -138,12 +113,13 @@ const PrintingScreen = () => {
         const photoImgResult = await printerApi.drawImage({
           page: 0,
           panel: 1,
-          x: 514,
-          y: 317,
-          width: 400,
-          height: 400,
+          x: 150,
+          y: 100,
+          width: 150,
+          height: 200,
           imagePath: photoPath
         });
+          
 
         console.log('📸 사진 이미지 그리기 결과:', photoImgResult);
 
@@ -159,29 +135,6 @@ const PrintingScreen = () => {
 
         const text = "부모님 감사합니다";
         console.log('📝 텍스트 그리기 시도:', text);
-
-        // const textResult = await printerApi.drawText({
-        //   page: 0,
-        //   panel: 1,
-        //   x: 0,
-        //   y: 50,
-        //   width: 400,
-        //   height: 100,
-        //   fontName: "KCC은영체(Windows용)",
-        //   fontSize: 32,
-        //   fontStyle: 1,
-        //   color: 0x0000FF,
-        //   text
-        // });
-
-        // console.log('📝 텍스트 그리기 결과:', textResult);
-
-        // if (!textResult.success) {
-        //   console.error('❌ 텍스트 그리기 실패:', textResult.error);
-        //   setStatus(`텍스트 출력 실패`);
-        //   setErrorDetails(`상세 오류: ${textResult.error || '알 수 없는 오류'}`);
-        //   return;
-        // }
 
         setProgress(80);
         setStatus('인쇄 중...');
@@ -211,6 +164,9 @@ const PrintingScreen = () => {
         console.error('❌ 인쇄 과정 오류:', error);
         setStatus(`오류 발생`);
         setErrorDetails(`예외 발생: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      } finally {
+        // 인쇄 완료 플래그 설정
+        printingInProgress.current = false;
       }
     };
 
@@ -233,7 +189,7 @@ const PrintingScreen = () => {
       clearInterval(progressInterval);
       printerApi.closeDevice().catch(e => console.error('❌ 컴포넌트 언마운트 시 프린터 연결 해제 실패:', e));
     };
-  }, [navigate]);
+  }, [navigate]); // navigate만 의존성으로 유지
 
   // 상단 로고 컨테이너
   const topLogoContainerStyle: CSSProperties = {

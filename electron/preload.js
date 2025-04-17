@@ -4,7 +4,9 @@ const koffi = require('koffi');
 const fs = require('fs');
 
 // DLL 경로 설정
-const dllPath = path.join(__dirname, 'resources', 'SmartComm2.dll');
+const dllPath = process.env.NODE_ENV === 'development' 
+  ? path.join(__dirname, 'resources', 'SmartComm2.dll')
+  : path.join(process.resourcesPath, 'resources', 'SmartComm2.dll');
 console.log('📂 DLL 경로:', dllPath);
 console.log('📦 Koffi 버전:', koffi.version);
 console.log('🧠 Electron arch:', process.arch);
