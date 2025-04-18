@@ -100,7 +100,7 @@ const PrintingScreen = () => {
         panel: 1,
         text: text,
         x: 60,
-        y: 565,
+        y: 570,
         fontName: "KCC-은영체",  // 폰트명
         fontSize: 10,
         fontStyle: 0x01 // Bold적용
@@ -134,7 +134,11 @@ const PrintingScreen = () => {
     }
   };
 
-
+  // 메인 화면으로 돌아가기 함수
+  const goToMainScreen = () => {
+    // navigate('/') 대신 window.location.hash 사용
+    window.location.hash = '#/';
+  };
 
   // 스타일은 그대로 유지
   const containerStyle: CSSProperties = {
@@ -252,7 +256,7 @@ const PrintingScreen = () => {
     zIndex: 0,
   };
 
-  const retryButtonStyle: CSSProperties = {
+  const buttonStyle: CSSProperties = {
     padding: '12px 24px',
     backgroundColor: '#4CAF50',
     color: '#fff',
@@ -264,10 +268,6 @@ const PrintingScreen = () => {
     marginTop: '20px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     transition: 'all 0.3s ease',
-  };
-
-  const handleRetry = () => {
-    window.location.reload();
   };
 
   return (
@@ -329,9 +329,9 @@ const PrintingScreen = () => {
 
         {errorDetails && (
           <button
-            style={retryButtonStyle}
-            onClick={handleRetry}
-            onMouseOver={e => {
+            style={buttonStyle}
+            onClick={goToMainScreen}
+            onMouseOver={(e: { currentTarget: { style: { backgroundColor: string; transform: string; }; }; }) => {
               e.currentTarget.style.backgroundColor = '#45a049';
               e.currentTarget.style.transform = 'translateY(-2px)';
             }}
@@ -340,7 +340,7 @@ const PrintingScreen = () => {
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            다시 시도하기
+            메인 화면으로 돌아가기
           </button>
         )}
 

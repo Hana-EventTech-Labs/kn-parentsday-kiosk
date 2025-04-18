@@ -32,13 +32,21 @@ const QRCodeScreen = () => {
         ws.onopen = () => console.log('📡 WebSocket 연결됨')
         ws.onclose = () => console.log('❌ WebSocket 종료됨')
         ws.onerror = (e) => console.error('WebSocket 오류:', e)
-        ws.onmessage = (msg) => {
+        ws.onmessage = async (msg) => {
           const data = JSON.parse(msg.data)
           console.log('📥 WebSocket 메시지:', data)
 
           if (data.type === 'image_uploaded') {
             const imageUrl = `https://port-0-kiosk-builder-m47pn82w3295ead8.sel4.cloudtype.app${data.image_url}`
-            setUploadedImage(imageUrl)
+            
+            try {
+              // 이미지 화질 개선
+              const enhancedImageUrl = await enhanceImageQuality(imageUrl)
+              setUploadedImage(enhancedImageUrl)
+            } catch (err) {
+              console.error('이미지 화질 개선 실패:', err)
+              setUploadedImage(imageUrl) // 실패시 원본 이미지 사용
+            }
           }
         }
       } catch (err) {
@@ -55,51 +63,105 @@ const QRCodeScreen = () => {
     }
   }, [])
 
-  // 이미지를 로컬에 저장하는 함수를 수정합니다 (Electron의 fs 모듈 사용)
+  // 이미지 화질 개선 함수
+  const enhanceImageQuality = (imageUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous' // CORS 문제 해결
+      
+      img.onload = () => {
+        // 캔버스 생성
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        if (!ctx) {
+          console.error('Canvas context를 가져올 수 없습니다.')
+          resolve(imageUrl) // 원본 이미지 URL 반환
+          return
+        }
+        
+        // 원본 이미지 크기 유지
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        
+        // 고품질 이미지 렌더링 설정
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
+        
+        // 이미지 그리기
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        
+        // 고품질 이미지 데이터 URL 생성 (품질 0.95로 설정)
+        const enhancedImageUrl = canvas.toDataURL('image/jpeg', 0.95)
+        resolve(enhancedImageUrl)
+      }
+      
+      img.onerror = (err) => {
+        console.error('이미지 로드 실패:', err)
+        resolve(imageUrl) // 실패 시 원본 URL 반환
+      }
+      
+      img.src = imageUrl
+    })
+  }
+
+  // 이미지를 로컬에 저장하는 함수
   const saveImageToLocal = async (url: string, filename = 'photo.png') => {
     try {
-      console.log('이미지 저장 시작', url);
+      console.log('이미지 저장 시작', url)
       
       // fileApi가 있는지 확인 (Electron 환경)
       if (window.fileApi) {
-        console.log('Electron fileApi 사용');
-        const result = await window.fileApi.saveImageFromUrl(url, filename);
+        console.log('Electron fileApi 사용')
+        const result = await window.fileApi.saveImageFromUrl(url, filename)
         
         if (!result.success) {
-          throw new Error(result.error);
+          throw new Error(result.error)
         }
         
-        console.log('이미지 저장 성공:', result.filePath);
-        return result.filePath;
+        console.log('이미지 저장 성공:', result.filePath)
+        return result.filePath
       } else {
         // 일반 브라우저 환경에서는 다운로드 대화상자 사용
-        console.log('일반 브라우저 다운로드 사용');
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
+        console.log('일반 브라우저 다운로드 사용')
         
-        const a = document.createElement('a');
-        a.href = objectUrl;
-        a.download = filename;
-        a.click();
+        // Data URL인 경우 바로 다운로드
+        if (url.startsWith('data:')) {
+          const a = document.createElement('a')
+          a.href = url
+          a.download = filename
+          a.click()
+          console.log('Data URL 이미지 다운로드 시작')
+        } else {
+          // URL인 경우 fetch로 다운로드
+          const response = await fetch(url)
+          const blob = await response.blob()
+          const objectUrl = URL.createObjectURL(blob)
+          
+          const a = document.createElement('a')
+          a.href = objectUrl
+          a.download = filename
+          a.click()
+          
+          URL.revokeObjectURL(objectUrl)
+        }
         
-        URL.revokeObjectURL(objectUrl);
-        console.log('다운로드 다이얼로그 표시됨');
+        console.log('다운로드 다이얼로그 표시됨')
       }
     } catch (err) {
-      console.error('이미지 저장 실패:', err);
+      console.error('이미지 저장 실패:', err)
     }
-  };
+  }
 
   const handleNext = async () => {
     // 이미지가 있으면 먼저 로컬에 저장
     if (uploadedImage) {
-      await saveImageToLocal(uploadedImage);
+      await saveImageToLocal(uploadedImage)
     }
   
     // 기존처럼 WebSocket 정리 & 서버 삭제 요청
     if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.close();
+      socketRef.current.close()
     }
   
     if (eventId) {
@@ -109,13 +171,13 @@ const QRCodeScreen = () => {
           {
             method: 'DELETE',
           }
-        );
+        )
       } catch (err) {
-        console.error('세션 삭제 실패:', err);
+        console.error('세션 삭제 실패:', err)
       }
     }
   
-    navigate('/keyboard');
+    navigate('/keyboard')
   }
 
   const handleReset = async () => {
@@ -149,7 +211,7 @@ const QRCodeScreen = () => {
     justifyContent: 'space-between',
     position: 'relative', // 절대 위치 지정을 위한 상대 위치 설정
     backgroundColor: '#ffffff',
-  };
+  }
 
   // 상단 로고 스타일
   const topLogoContainerStyle: CSSProperties = {
@@ -159,7 +221,7 @@ const QRCodeScreen = () => {
     alignItems: 'center',
     paddingTop: '48px',
     paddingBottom: '24px',
-  };
+  }
 
   // 중앙 컨텐츠 스타일
   const contentContainerStyle: CSSProperties = {
@@ -169,7 +231,7 @@ const QRCodeScreen = () => {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: '150px', // 하단 로고를 위한 공간 확보
-  };
+  }
 
   // 하단 로고 스타일 - 절대 위치로 고정
   const bottomLogoContainerStyle: CSSProperties = {
@@ -181,7 +243,7 @@ const QRCodeScreen = () => {
     bottom: '30px', // 화면 하단에서 30px 위에 배치
     left: 0,
     paddingBottom: '20px',
-  };
+  }
   
   return (
     <div style={containerStyle}>
@@ -299,6 +361,19 @@ const QRCodeScreen = () => {
       </div>
     </div>
   )
+}
+
+// window 타입에 fileApi 추가
+declare global {
+  interface Window {
+    fileApi?: {
+      saveImageFromUrl: (url: string, filename: string) => Promise<{
+        success: boolean;
+        filePath?: string;
+        error?: string;
+      }>;
+    };
+  }
 }
 
 export default QRCodeScreen
