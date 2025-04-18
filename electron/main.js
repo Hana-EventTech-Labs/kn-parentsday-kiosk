@@ -1,31 +1,57 @@
-const { app, BrowserWindow } = require('electron')
-const path = require('path')
+const { app, BrowserWindow, globalShortcut } = require('electron'); // globalShortcut 추가
+const path = require('path');
+const isDev = require('electron-is-dev'); // 개발/배포 구분
+
+let win; // win을 전역에서 접근 가능하게 선언
 
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 1080,
-    height: 1920,
-    kiosk: true,             // ✅ 키오스크 모드
-    fullscreen: true,        // ✅ 전체화면
-    frame: false,            // ✅ 상단 메뉴바 제거
-    alwaysOnTop: true,       // ✅ 항상 위
+  win = new BrowserWindow({
+    width: isDev ? 1280 : 1080,
+    height: isDev ? 800 : 1920,
+    kiosk: !isDev,
+    fullscreen: !isDev,
+    frame: isDev,
+    alwaysOnTop: !isDev,
+    resizable: isDev,
     webPreferences: {
       contextIsolation: true,
+      sandbox: false,
+      preload: path.join(__dirname, 'preload.js'),
+      additionalArguments: [isDev ? '--dev' : '--prod'],
     },
-  })
+  });
 
-  win.loadFile(path.join(__dirname, '../dist/index.html'))
+  win.loadURL(
+    isDev
+      ? 'http://localhost:5173'
+      : `file://${path.join(__dirname, '../dist/index.html')}`
+  );
 
-  // win.webContents.openDevTools() // 개발자도구 off
+  if (isDev) {
+    win.webContents.openDevTools();
+  }
 }
 
 app.whenReady().then(() => {
-  createWindow()
+  createWindow();
+
+  // ✅ F12 키로 개발자 도구 열기
+  globalShortcut.register('F12', () => {
+    if (win) {
+      win.webContents.toggleDevTools();
+    }
+  });
+
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+// 앱 종료 시 단축키 해제
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+  if (process.platform !== 'darwin') app.quit();
+});

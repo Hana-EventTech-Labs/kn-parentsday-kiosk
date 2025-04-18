@@ -55,15 +55,51 @@ const QRCodeScreen = () => {
     }
   }, [])
 
+  // 이미지를 로컬에 저장하는 함수를 수정합니다 (Electron의 fs 모듈 사용)
+  const saveImageToLocal = async (url: string, filename = 'photo.png') => {
+    try {
+      console.log('이미지 저장 시작', url);
+      
+      // fileApi가 있는지 확인 (Electron 환경)
+      if (window.fileApi) {
+        console.log('Electron fileApi 사용');
+        const result = await window.fileApi.saveImageFromUrl(url, filename);
+        
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+        
+        console.log('이미지 저장 성공:', result.filePath);
+        return result.filePath;
+      } else {
+        // 일반 브라우저 환경에서는 다운로드 대화상자 사용
+        console.log('일반 브라우저 다운로드 사용');
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = filename;
+        a.click();
+        
+        URL.revokeObjectURL(objectUrl);
+        console.log('다운로드 다이얼로그 표시됨');
+      }
+    } catch (err) {
+      console.error('이미지 저장 실패:', err);
+    }
+  };
+
   const handleNext = async () => {
     // 이미지가 있으면 먼저 로컬에 저장
     if (uploadedImage) {
-      await downloadImageToLocal(uploadedImage)
+      await saveImageToLocal(uploadedImage);
     }
   
     // 기존처럼 WebSocket 정리 & 서버 삭제 요청
     if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.close()
+      socketRef.current.close();
     }
   
     if (eventId) {
@@ -73,13 +109,13 @@ const QRCodeScreen = () => {
           {
             method: 'DELETE',
           }
-        )
+        );
       } catch (err) {
-        console.error('세션 삭제 실패:', err)
+        console.error('세션 삭제 실패:', err);
       }
     }
   
-    navigate('/keyboard')
+    navigate('/keyboard');
   }
 
   const handleReset = async () => {
@@ -101,23 +137,6 @@ const QRCodeScreen = () => {
     }
 
     navigate('/')
-  }
-
-  const downloadImageToLocal = async (url: string, filename = 'photo.png') => {
-    try {
-      const response = await fetch(url)
-      const blob = await response.blob()
-      const objectUrl = URL.createObjectURL(blob)
-  
-      const a = document.createElement('a')
-      a.href = objectUrl
-      a.download = filename
-      a.click()
-  
-      URL.revokeObjectURL(objectUrl)
-    } catch (err) {
-      console.error('이미지 다운로드 실패:', err)
-    }
   }
 
   // 컨테이너 스타일 추가
