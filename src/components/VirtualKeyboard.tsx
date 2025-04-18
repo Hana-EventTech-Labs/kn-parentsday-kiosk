@@ -184,6 +184,7 @@ const VirtualKeyboard = ({ onChange, onPrint, onGoToMain }: VirtualKeyboardProps
         fontSize: '80px',
         wordBreak: 'break-word',
         whiteSpace: 'pre-wrap',
+        textAlign: 'center',
     };
 
     const cursorStyle: CSSProperties = {
@@ -198,7 +199,7 @@ const VirtualKeyboard = ({ onChange, onPrint, onGoToMain }: VirtualKeyboardProps
     const mainKeyStyle: CSSProperties = {
         ...specialKeyStyle,
         width: '150px',      // 너비 설정
-        fontSize: '28px',    // 폰트 크기 설정
+        fontSize: '23px',    // 폰트 크기 설정 수정
         fontWeight: 'bold',  // 글자 굵게
         background: '#fef3c7', // 연한 노란색 배경
         color: '#d97706',    // 진한 주황색 글자
@@ -230,7 +231,7 @@ const VirtualKeyboard = ({ onChange, onPrint, onGoToMain }: VirtualKeyboardProps
             { label: 'ㅓ', key: 'ㅓ' },
             { label: 'ㅏ', key: 'ㅏ' },
             { label: 'ㅣ', key: 'ㅣ' },
-            { label: '처음\n으로', key: 'Main', isSpecial: true },
+            { label: '처음으로', key: 'Main', isSpecial: true },
         ],
         [
             { label: '⇧', key: 'Shift', isSpecial: true, isShift: true },
@@ -276,7 +277,7 @@ const VirtualKeyboard = ({ onChange, onPrint, onGoToMain }: VirtualKeyboardProps
             { label: 'i', key: 'i', shiftLabel: 'I', shiftKey: 'I' },
             { label: 'o', key: 'o', shiftLabel: 'O', shiftKey: 'O' },
             { label: 'p', key: 'p', shiftLabel: 'P', shiftKey: 'P' },
-            { label: '처음\n으로', key: 'Main', isSpecial: true },
+            { label: '처음으로', key: 'Main', isSpecial: true },
         ],
         [
             { label: 'a', key: 'a', shiftLabel: 'A', shiftKey: 'A' },
