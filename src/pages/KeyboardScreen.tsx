@@ -1,12 +1,19 @@
-import { useState, CSSProperties } from 'react';
+import { useState, CSSProperties, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VirtualKeyboard from '../components/VirtualKeyboard';
 
 const KeyboardScreen = () => {
-  const [, setInput] = useState('')
-  const [isNavigating, setIsNavigating] = useState(false); // ⬅️ 추가
+  const [input, setInput] = useState('')
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  const navigate = useNavigate(); // 👈 추가
+  const navigate = useNavigate();
+
+  // input이 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    if (input) {
+      localStorage.setItem('userInputText', input);
+    }
+  }, [input]);
 
   const handlePrint = () => {
     if (isNavigating) return; // 중복 방지
@@ -17,7 +24,6 @@ const KeyboardScreen = () => {
       navigate('/printing');
     }, 100); // 100ms 정도 주면 충분
   };
-
 
   // 메인 컨테이너 스타일
   const containerStyle: CSSProperties = {
