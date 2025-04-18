@@ -4,9 +4,10 @@ import { HangulComposer } from '../logic/hangulComposer'
 interface VirtualKeyboardProps {
     onChange: (text: string) => void
     onPrint?: () => void;
+    onGoToMain?: () => void;
 }
 
-const VirtualKeyboard = ({ onChange, onPrint }: VirtualKeyboardProps) => {
+const VirtualKeyboard = ({ onChange, onPrint, onGoToMain }: VirtualKeyboardProps) => {
     const composerRef = useRef(new HangulComposer())
     const [text, setText] = useState('')
     const [composing, setComposing] = useState('')
@@ -192,20 +193,20 @@ const VirtualKeyboard = ({ onChange, onPrint }: VirtualKeyboardProps) => {
     const composingTextStyle: CSSProperties = {
         color: '#3b82f6',
     };
+
+    // 메인으로 버튼 스타일
+    const mainKeyStyle: CSSProperties = {
+        ...specialKeyStyle,
+        width: '150px',      // 너비 설정
+        fontSize: '28px',    // 폰트 크기 설정
+        fontWeight: 'bold',  // 글자 굵게
+        background: '#fef3c7', // 연한 노란색 배경
+        color: '#d97706',    // 진한 주황색 글자
+        height: '90px',      // 일반 키와 같은 높이로 설정
+    };
+
     // Korean keyboard layout
     const koreanKeyboard = [
-        // [
-        //     { label: '1', key: '1' },
-        //     { label: '2', key: '2' },
-        //     { label: '3', key: '3' },
-        //     { label: '4', key: '4' },
-        //     { label: '5', key: '5' },
-        //     { label: '6', key: '6' },
-        //     { label: '7', key: '7' },
-        //     { label: '8', key: '8' },
-        //     { label: '9', key: '9' },
-        //     { label: '0', key: '0' },
-        // ],
         [
             { label: 'ㅂ', key: 'ㅂ', shiftLabel: 'ㅃ', shiftKey: 'ㅃ' },
             { label: 'ㅈ', key: 'ㅈ', shiftLabel: 'ㅉ', shiftKey: 'ㅉ' },
@@ -229,7 +230,7 @@ const VirtualKeyboard = ({ onChange, onPrint }: VirtualKeyboardProps) => {
             { label: 'ㅓ', key: 'ㅓ' },
             { label: 'ㅏ', key: 'ㅏ' },
             { label: 'ㅣ', key: 'ㅣ' },
-
+            { label: '처음\n으로', key: 'Main', isSpecial: true },
         ],
         [
             { label: '⇧', key: 'Shift', isSpecial: true, isShift: true },
@@ -275,6 +276,7 @@ const VirtualKeyboard = ({ onChange, onPrint }: VirtualKeyboardProps) => {
             { label: 'i', key: 'i', shiftLabel: 'I', shiftKey: 'I' },
             { label: 'o', key: 'o', shiftLabel: 'O', shiftKey: 'O' },
             { label: 'p', key: 'p', shiftLabel: 'P', shiftKey: 'P' },
+            { label: '처음\n으로', key: 'Main', isSpecial: true },
         ],
         [
             { label: 'a', key: 'a', shiftLabel: 'A', shiftKey: 'A' },
@@ -308,7 +310,7 @@ const VirtualKeyboard = ({ onChange, onPrint }: VirtualKeyboardProps) => {
     // 현재 키보드 레이아웃 선택
     const currentKeyboard = isKorean ? koreanKeyboard : englishKeyboard;
 
-// renderKey 함수 수정 - 인쇄하기 버튼 특별 처리
+// renderKey 함수 수정 - 메인으로 버튼 특별 처리 추가
 const renderKey = (keyObj: any, index: number) => {
     // Determine what to display based on shift state
     let displayLabel = keyObj.label;
@@ -326,12 +328,14 @@ const renderKey = (keyObj: any, index: number) => {
         keyStyle = { ...spaceKeyStyle };
     } else if (keyObj.key === 'Print') {
         keyStyle = { ...printKeyStyle }; // 인쇄하기 버튼에 특별 스타일 적용
+    } else if (keyObj.key === 'Main') {
+        keyStyle = { ...mainKeyStyle }; // 메인으로 버튼에 특별 스타일 적용
     } else if (keyObj.isSpecial) {
         keyStyle = { ...specialKeyStyle };
     }
 
     // 특수 키 배경 및 텍스트 색 설정
-    if (keyObj.isSpecial && keyObj.key !== 'Print') { // Print 키가 아닌 경우에만 기본 특수 키 스타일 적용
+    if (keyObj.isSpecial && keyObj.key !== 'Print' && keyObj.key !== 'Main') { // Print와 Main 키가 아닌 경우에만 기본 특수 키 스타일 적용
         if (keyObj.key === 'Backspace') {
             keyStyle.background = '#fee2e2';
             keyStyle.color = '#dc2626';
@@ -363,6 +367,7 @@ const renderKey = (keyObj: any, index: number) => {
                 else if (keyObj.key === 'Shift') toggleShift();
                 else if (keyObj.key === 'Enter') handleEnter();
                 else if (keyObj.key === 'Print' && onPrint) onPrint();
+                else if (keyObj.key === 'Main' && onGoToMain) onGoToMain();
                 else handleKeyClick(keyToUse);
             }}
         >
