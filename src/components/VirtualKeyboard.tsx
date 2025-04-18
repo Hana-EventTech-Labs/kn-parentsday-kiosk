@@ -328,6 +328,11 @@ const renderKey = (keyObj: any, index: number) => {
         keyStyle = { ...spaceKeyStyle };
     } else if (keyObj.key === 'Print') {
         keyStyle = { ...printKeyStyle }; // 인쇄하기 버튼에 특별 스타일 적용
+        // 텍스트가 비어있을 경우 버튼 비활성화 스타일 추가
+        if (text.trim() === '' && composing === '') {
+            keyStyle.opacity = 0.5;
+            keyStyle.cursor = 'not-allowed';
+        }
     } else if (keyObj.key === 'Main') {
         keyStyle = { ...mainKeyStyle }; // 메인으로 버튼에 특별 스타일 적용
     } else if (keyObj.isSpecial) {
@@ -366,7 +371,12 @@ const renderKey = (keyObj: any, index: number) => {
                 else if (keyObj.key === 'Lang') toggleLanguage();
                 else if (keyObj.key === 'Shift') toggleShift();
                 else if (keyObj.key === 'Enter') handleEnter();
-                else if (keyObj.key === 'Print' && onPrint) onPrint();
+                else if (keyObj.key === 'Print' && onPrint) {
+                    // 텍스트가 비어있지 않은 경우에만 인쇄 기능 실행
+                    if (text.trim() !== '' || composing !== '') {
+                        onPrint();
+                    }
+                }
                 else if (keyObj.key === 'Main' && onGoToMain) onGoToMain();
                 else handleKeyClick(keyToUse);
             }}
