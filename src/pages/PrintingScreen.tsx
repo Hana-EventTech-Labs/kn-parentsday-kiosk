@@ -79,7 +79,7 @@ const PrintingScreen = () => {
       const photoImgResult = await printerApi.drawImage({
         page: 0,
         panel: 1,
-        x: 100,
+        x: 67,
         y: 100,
         width: 460,
         height: 370,
@@ -93,14 +93,14 @@ const PrintingScreen = () => {
       setProgress(70);
       setStatus('텍스트 출력 중...');
 
-      // 텍스트를 출력하는 부분 추가
-      const text = "홍길동의 아버지";
+      // localStorage에서 사용자가 입력한 텍스트 가져오기
+      const text = localStorage.getItem('userInputText') || "텍스트를 입력하세요";
       const textResult = await printerApi.drawText({
         page: 0,
         panel: 1,
         text: text,
-        x: 65,
-        y: 555,
+        x: 60,
+        y: 565,
         fontName: "KCC-은영체",  // 폰트명
         fontSize: 10,
         fontStyle: 0x01 // Bold적용
