@@ -79,10 +79,10 @@ const PrintingScreen = () => {
       const photoImgResult = await printerApi.drawImage({
         page: 0,
         panel: 1,
-        x: 67,
+        x: 46,
         y: 100,
-        width: 460,
-        height: 370,
+        width: 543,
+        height: 442,
         imagePath: photoPath,
       });
 
