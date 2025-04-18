@@ -131,7 +131,7 @@ const VirtualKeyboard = ({ onChange, onPrint, onGoToMain }: VirtualKeyboardProps
     const printKeyStyle: CSSProperties = {
         ...specialKeyStyle,
         width: '200px',      // 너비 증가
-        fontSize: '32px',    // 폰트 크기 증가
+        fontSize: '28px',    // 폰트 크기 증가
         fontWeight: 'bold',  // 글자 굵게
         background: '#dcfce7', // 연한 초록색 배경
         color: '#16a34a',    // 진한 초록색 글자

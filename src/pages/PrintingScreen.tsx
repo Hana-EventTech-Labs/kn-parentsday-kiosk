@@ -99,8 +99,8 @@ const PrintingScreen = () => {
         page: 0,
         panel: 1,
         text: text,
-        x: 60,
-        y: 570,
+        x: 55,
+        y: 560,
         fontName: "KCC-은영체",  // 폰트명
         fontSize: 13,
         fontStyle: 0x01 // Bold적용
