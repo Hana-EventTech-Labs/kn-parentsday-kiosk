@@ -1,21 +1,16 @@
 {
-  "name": "printer-sdk-electron",
-  "private": true,
+  "name": "kn-parentsday-kiosk",
   "version": "1.0.0",
-  "description": "프린터 SDK 일렉트론 애플리케이션",
-  "type": "commonjs",
+  "private": true,
   "main": "electron/main.js",
+  "type": "commonjs",
   "build": {
     "asar": true,
     "files": [
       "dist/**",
       {
         "from": "electron",
-        "to": "electron",
-        "filter": [
-          "main.js",
-          "preload.js"
-        ]
+        "to": "electron"
       }
     ],
     "extraResources": [
@@ -26,42 +21,33 @@
     ],
     "win": {
       "target": "portable"
+    },
+    "directories": {
+      "output": "out"
     }
   },
-  "author": "hana platform",
   "scripts": {
     "dev": "vite",
     "start": "electron-forge start",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder",
-    "clean": "rd /s /q dist && echo Cleaned!"
+    "clean": "rd /s /q dist out && echo Cleaned!"
   },
   "dependencies": {
     "electron-is-dev": "^2.0.0",
     "koffi": "^2.11.0",
-    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.5.0"
   },
   "devDependencies": {
-    "electron": "^35.1.5",
-    "@eslint/js": "^9.21.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^8.2.2",
+    "electron": "^35.1.5",
     "electron-builder": "^24.9.1",
-    "electron-rebuild": "^3.2.9",
-    "eslint": "^9.21.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
     "wait-on": "^8.0.3"
   }
