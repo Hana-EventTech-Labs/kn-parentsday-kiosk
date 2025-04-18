@@ -80,7 +80,7 @@ const PrintingScreen = () => {
         page: 0,
         panel: 1,
         x: 46,
-        y: 100,
+        y: 90,
         width: 543,
         height: 442,
         imagePath: photoPath,
@@ -102,7 +102,7 @@ const PrintingScreen = () => {
         x: 60,
         y: 570,
         fontName: "KCC-은영체",  // 폰트명
-        fontSize: 10,
+        fontSize: 13,
         fontStyle: 0x01 // Bold적용
       });
 

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut } = require('electron'); // globalShortcut 추가
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron'); // globalShortcut 추가, ipcMain 추가
 const path = require('path');
 const isDev = require('electron-is-dev'); // 개발/배포 구분
 
@@ -40,6 +40,12 @@ app.whenReady().then(() => {
     if (win) {
       win.webContents.toggleDevTools();
     }
+  });
+
+  // 종료 이벤트 처리
+  ipcMain.on('app:quit', () => {
+    console.log('앱 종료 요청 수신됨');
+    app.quit();
   });
 
   app.on('activate', () => {

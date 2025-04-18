@@ -201,6 +201,15 @@ const QRCodeScreen = () => {
     navigate('/')
   }
 
+  // 앱 종료 함수
+  const handleCloseApp = () => {
+    if (window.electronAPI) {
+      window.electronAPI.closeApp()
+    } else {
+      console.log('Electron API를 찾을 수 없습니다. 브라우저 환경에서는 앱을 종료할 수 없습니다.')
+    }
+  }
+
   // 컨테이너 스타일 추가
   const containerStyle: CSSProperties = {
     width: '100%',
@@ -244,9 +253,39 @@ const QRCodeScreen = () => {
     left: 0,
     paddingBottom: '20px',
   }
+
+  // 상단 우측 종료 버튼 스타일
+  const closeButtonStyle: CSSProperties = {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    width: '100px',
+    height: '100px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    zIndex: 100,
+  }
   
   return (
     <div style={containerStyle}>
+      {/* 앱 종료 버튼 */}
+      <button 
+        onClick={handleCloseApp}
+        style={closeButtonStyle}
+        title="앱 종료"
+      >
+        <span style={{
+          fontSize: '24px',
+          color: 'transparent',
+          fontWeight: 'bold'
+        }}>종료</span>
+      </button>
+
       {/* 상단 로고 */}
       <div style={topLogoContainerStyle}>
         <img
@@ -372,6 +411,9 @@ declare global {
         filePath?: string;
         error?: string;
       }>;
+    };
+    electronAPI?: {
+      closeApp: () => void;
     };
   }
 }

@@ -278,3 +278,12 @@ contextBridge.exposeInMainWorld('fileApi', {
     }
   }
 });
+
+// Electron 앱 종료 API 추가
+contextBridge.exposeInMainWorld('electronAPI', {
+  closeApp: () => {
+    console.log('🔴 앱 종료 요청');
+    const { ipcRenderer } = require('electron');
+    ipcRenderer.send('app:quit');
+  }
+});
