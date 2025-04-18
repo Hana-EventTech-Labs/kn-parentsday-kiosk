@@ -25,6 +25,16 @@ const KeyboardScreen = () => {
     }, 100); // 100ms 정도 주면 충분
   };
 
+  // 메인 페이지로 이동하는 함수
+  const handleGoToMain = () => {
+    if (isNavigating) return; // 중복 방지
+    setIsNavigating(true);
+    
+    
+    navigate('/');
+    
+  };
+
   // 메인 컨테이너 스타일
   const containerStyle: CSSProperties = {
     width: '100%',
@@ -85,7 +95,7 @@ const KeyboardScreen = () => {
 
       {/* 키보드 영역 */}
       <div style={keyboardContainerStyle}>
-        <VirtualKeyboard onChange={setInput} onPrint={handlePrint} />
+        <VirtualKeyboard onChange={setInput} onPrint={handlePrint} onGoToMain={handleGoToMain} />
       </div>
 
       {/* 하단 로고 - 절대 위치로 고정 */}
