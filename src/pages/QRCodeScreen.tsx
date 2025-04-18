@@ -265,16 +265,18 @@ const QRCodeScreen = () => {
             <button
               onClick={handleNext}
               style={{
-                backgroundColor: '#ef4444',
+                backgroundColor: uploadedImage ? '#ef4444' : '#cccccc',
                 color: 'white',
                 padding: '24px 48px',
                 borderRadius: '16px',
                 fontSize: '24px',
                 fontWeight: 'bold',
-                border: '3px solid #ef4444',
+                border: uploadedImage ? '3px solid #ef4444' : '3px solid #cccccc',
                 minWidth: '200px',
                 boxShadow: '0px 4px 10px rgba(0,0,0,0.15)',
+                cursor: uploadedImage ? 'pointer' : 'not-allowed',
               }}
+              disabled={!uploadedImage}
             >
               다음으로
             </button>
