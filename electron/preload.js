@@ -47,16 +47,16 @@ const DRAWTEXT2INFO = koffi.struct('DRAWTEXT2INFO', {
   fontHeight: 'int',
   fontWidth: 'int',
   style: 'int',
-  color: 'uint32',
+  color: 'uint32_t',
   option: 'int',
-  szFaceName: 'uint16[32]'
+  szFaceName: koffi.array('wchar_t', 32) // wchar_t 배열로 복원
 });
 
 // DLL 함수 정의
 const SmartComm_GetDeviceList2 = smart.stdcall('SmartComm_GetDeviceList2', 'int', ['void *']);
 const SmartComm_OpenDevice2 = smart.stdcall('SmartComm_OpenDevice2', 'int', ['void **', 'void *', 'int']);
 const SmartComm_DrawImage = smart.stdcall('SmartComm_DrawImage', 'int', ['void *', 'uint8', 'uint8', 'int', 'int', 'int', 'int', 'void *', 'void *']);
-const SmartComm_DrawText2 = smart.stdcall('SmartComm_DrawText2', 'int', ['void *', 'uint8', 'uint8', 'void *', 'void *']);
+const SmartComm_DrawText2 = smart.stdcall('SmartComm_DrawText', 'int', ['void *', 'uint8', 'uint8', 'int', 'int', 'void *', 'int', 'uint8', 'void *', 'void *']);
 const SmartComm_Print = smart.stdcall('SmartComm_Print', 'int', ['void *']);
 const SmartComm_CloseDevice = smart.stdcall('SmartComm_CloseDevice', 'int', ['void *']);
 const rectPtr = koffi.pointer('RECT', koffi.opaque()); // 반환값 무시할 거면 null 가능
@@ -166,48 +166,27 @@ contextBridge.exposeInMainWorld('printerApi', {
     }
   },
 
-  drawText: async ({ page, panel, x, y, width, height, fontName, fontSize, fontStyle, color, text }) => {
+  drawText: async ({ page, panel, x, y, fontName, fontSize, fontStyle, text }) => {
     try {
       if (!currentHandle) return { success: false, error: '프린터가 연결되지 않았습니다.' };
   
       console.log('📝 텍스트 그리기 시작:', text);
+      console.log('📝 폰트 이름:', fontName);
       
-      // 기존 정의된 DRAWTEXT2INFO 구조체 사용
-      const info = {
-        x: x,
-        y: y,
-        cx: width,
-        cy: height,
-        rotate: 0,
-        align: 0,
-        fontHeight: fontSize,
-        fontWidth: 0,
-        style: fontStyle,
-        color: color,
-        option: 0,
-        szFaceName: new Uint16Array(32)  // 원래 정의된 대로 Uint16Array 사용
-      };
-      
-      // 폰트 이름 복사 - Arial 사용 (단순화)
-      const fontBuf = Buffer.from("Arial\0", 'utf16le');
-      // Uint16Array에 폰트 이름 복사
-      fontBuf.copy(new Uint8Array(info.szFaceName.buffer));
-      
-      // 구조체 생성 (이미 정의된 DRAWTEXT2INFO 사용)
-      const dtInfo = koffi.alloc(DRAWTEXT2INFO, info);
-      
-      // 텍스트 버퍼 생성
+      const fontNameBuf = Buffer.from(fontName + '\0', 'utf16le');
       const textBuf = Buffer.from(text + '\0', 'utf16le');
-      
-      console.log('📝 텍스트 출력 시도:', text);
-      
-      // 이미 정의된 SmartComm_DrawText2 함수 사용
+
       const result = SmartComm_DrawText2(
         currentHandle,
         page,
         panel,
-        dtInfo,
-        textBuf
+        x,
+        y,
+        fontNameBuf,
+        fontSize,
+        fontStyle,
+        textBuf,
+        null
       );
       
       console.log('📝 텍스트 결과:', result);

@@ -25,12 +25,9 @@ export interface PrinterDevice {
     text: string;
     x: number;
     y: number;
-    width: number;
-    height: number;
     fontName: string;
     fontSize: number;
     fontStyle: number;
-    color: number;
   }
   
   // 전역 Window 타입 확장
