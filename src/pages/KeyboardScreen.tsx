@@ -44,6 +44,7 @@ const KeyboardScreen = () => {
     alignItems: 'stretch',
     backgroundColor: '#ffffff',
     position: 'relative', // 절대 위치 지정을 위해 상대 위치 설정
+    overflow: 'hidden', // 스크롤 방지
   };
 
   // 상단 로고 스타일

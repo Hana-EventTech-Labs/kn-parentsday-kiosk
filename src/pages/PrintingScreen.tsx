@@ -167,10 +167,11 @@ const PrintingScreen = () => {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     textAlign: 'center',
-    marginBottom: '350px',
+    marginTop: '20px',
+    marginBottom: '20px',
     position: 'relative',
     zIndex: 1,
   };

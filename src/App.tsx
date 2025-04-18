@@ -9,7 +9,7 @@ function App() {
   return (
     <div className="app-container" style={{
       position: 'relative',   // ✅ 필요
-      overflow: 'auto',       // ✅ 스크롤이든 화면 넘김이든 허용
+      overflow: 'hidden',     // ✅ 스크롤 방지
       width: '1080px',
       height: '1920px',
       maxWidth: '100%',

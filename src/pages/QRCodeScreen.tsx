@@ -220,6 +220,7 @@ const QRCodeScreen = () => {
     justifyContent: 'space-between',
     position: 'relative', // 절대 위치 지정을 위한 상대 위치 설정
     backgroundColor: '#ffffff',
+    overflow: 'hidden', // 스크롤 방지
   }
 
   // 상단 로고 스타일
@@ -238,8 +239,9 @@ const QRCodeScreen = () => {
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '150px', // 하단 로고를 위한 공간 확보
+    alignItems: 'flex-start',
+    paddingTop: '20px',
+    marginBottom: '150px',
   }
 
   // 하단 로고 스타일 - 절대 위치로 고정
@@ -344,7 +346,7 @@ const QRCodeScreen = () => {
               justifyContent: 'center',
               gap: '40px',
               marginTop: '68px',
-              marginBottom: '800px',
+              marginBottom: '120px',
             }}
           >
             <button
