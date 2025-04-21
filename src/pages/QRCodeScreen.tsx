@@ -38,7 +38,7 @@ const QRCodeScreen = () => {
 
           if (data.type === 'image_uploaded') {
             const imageUrl = `https://port-0-kiosk-builder-m47pn82w3295ead8.sel4.cloudtype.app${data.image_url}`
-            
+
             try {
               // 이미지 화질 개선
               const enhancedImageUrl = await enhanceImageQuality(imageUrl)
@@ -68,39 +68,39 @@ const QRCodeScreen = () => {
     return new Promise((resolve) => {
       const img = new Image()
       img.crossOrigin = 'anonymous' // CORS 문제 해결
-      
+
       img.onload = () => {
         // 캔버스 생성
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
-        
+
         if (!ctx) {
           console.error('Canvas context를 가져올 수 없습니다.')
           resolve(imageUrl) // 원본 이미지 URL 반환
           return
         }
-        
+
         // 원본 이미지 크기 유지
         canvas.width = img.naturalWidth
         canvas.height = img.naturalHeight
-        
+
         // 고품질 이미지 렌더링 설정
         ctx.imageSmoothingEnabled = true
         ctx.imageSmoothingQuality = 'high'
-        
+
         // 이미지 그리기
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        
+
         // 고품질 이미지 데이터 URL 생성 (품질 0.95로 설정)
         const enhancedImageUrl = canvas.toDataURL('image/jpeg', 0.95)
         resolve(enhancedImageUrl)
       }
-      
+
       img.onerror = (err) => {
         console.error('이미지 로드 실패:', err)
         resolve(imageUrl) // 실패 시 원본 URL 반환
       }
-      
+
       img.src = imageUrl
     })
   }
@@ -109,22 +109,22 @@ const QRCodeScreen = () => {
   const saveImageToLocal = async (url: string, filename = 'photo.png') => {
     try {
       console.log('이미지 저장 시작', url)
-      
+
       // fileApi가 있는지 확인 (Electron 환경)
       if (window.fileApi) {
         console.log('Electron fileApi 사용')
         const result = await window.fileApi.saveImageFromUrl(url, filename)
-        
+
         if (!result.success) {
           throw new Error(result.error)
         }
-        
+
         console.log('이미지 저장 성공:', result.filePath)
         return result.filePath
       } else {
         // 일반 브라우저 환경에서는 다운로드 대화상자 사용
         console.log('일반 브라우저 다운로드 사용')
-        
+
         // Data URL인 경우 바로 다운로드
         if (url.startsWith('data:')) {
           const a = document.createElement('a')
@@ -137,15 +137,15 @@ const QRCodeScreen = () => {
           const response = await fetch(url)
           const blob = await response.blob()
           const objectUrl = URL.createObjectURL(blob)
-          
+
           const a = document.createElement('a')
           a.href = objectUrl
           a.download = filename
           a.click()
-          
+
           URL.revokeObjectURL(objectUrl)
         }
-        
+
         console.log('다운로드 다이얼로그 표시됨')
       }
     } catch (err) {
@@ -158,12 +158,12 @@ const QRCodeScreen = () => {
     if (uploadedImage) {
       await saveImageToLocal(uploadedImage)
     }
-  
+
     // 기존처럼 WebSocket 정리 & 서버 삭제 요청
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.close()
     }
-  
+
     if (eventId) {
       try {
         await fetch(
@@ -176,7 +176,7 @@ const QRCodeScreen = () => {
         console.error('세션 삭제 실패:', err)
       }
     }
-  
+
     navigate('/keyboard')
   }
 
@@ -230,7 +230,25 @@ const QRCodeScreen = () => {
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: '48px',
-    paddingBottom: '24px',
+    paddingBottom: '12px', // 비율 안내 메시지를 위해 패딩 감소
+  }
+
+  // 비율 안내 메시지 스타일
+  const ratioGuideStyle: CSSProperties = {
+    width: '100%',
+    textAlign: 'center',
+    fontSize: '22px',
+    color: '#1f2937', // 더 진한 색상
+    marginBottom: '16px',
+    lineHeight: '1.6',
+    fontWeight: '600',
+    background: 'linear-gradient(to right, #f0f4f8, #e6f2ff)',
+    padding: '12px 20px',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    border: '1px solid #e0e7ff',
+    maxWidth: '700px',
+    margin: '0 auto',
   }
 
   // 중앙 컨텐츠 스타일
@@ -272,11 +290,11 @@ const QRCodeScreen = () => {
     cursor: 'pointer',
     zIndex: 100,
   }
-  
+
   return (
     <div style={containerStyle}>
       {/* 앱 종료 버튼 */}
-      <button 
+      <button
         onClick={handleCloseApp}
         style={closeButtonStyle}
         title="앱 종료"
@@ -300,6 +318,15 @@ const QRCodeScreen = () => {
             maxWidth: '80%',
           }}
         />
+      </div>
+
+      {/* 비율 안내 메시지 */}
+      <div style={ratioGuideStyle}>
+        QR코드를 카메라로 인식 한 후,<br />
+        반드시 가로형 4:3 비율의 사진을 업로드해주세요.<br />
+        <span style={{ color: 'Red', fontWeight: '600' }}>
+          ※ 가로가 아니거나비율이 다르면 이미지가 변형되어 인쇄됩니다
+        </span>
       </div>
 
       {/* 중앙 QR 코드 + 버튼 */}
